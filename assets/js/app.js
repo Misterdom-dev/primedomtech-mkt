@@ -106,8 +106,9 @@ function entrar() {
   $("#tela-login").hidden = true;
   $("#app").hidden = false;
   renderTudo();
-  const hash = location.hash.replace("#", "") || "geral";
-  mostrarSecao(hash);
+  const secoes = ["inicio", "tarefas", "calendario", "estrategia", "banco", "ideias"];
+  const hash = location.hash.replace("#", "");
+  mostrarSecao(secoes.includes(hash) ? hash : "inicio");
 }
 
 function sair() {
@@ -121,14 +122,12 @@ function mostrarSecao(id) {
   document.querySelectorAll(".nav-link").forEach((a) =>
     a.classList.toggle("ativo", a.dataset.sec === id)
   );
-  $("#menu-mobile").checked = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /* ---------- Renderização ---------- */
 function renderTudo() {
-  renderCabecalho();
-  renderGeral();
+  renderInicio();
   renderEstrategia();
   renderCalendario();
   renderTarefas();
@@ -136,38 +135,41 @@ function renderTudo() {
   renderIdeiasClaude();
 }
 
-function renderCabecalho() {
-  $("#atualizado").textContent = "Atualizado em " + esc(DADOS.meta.atualizadoEm);
-}
-
-function renderGeral() {
+function renderInicio() {
   const v = DADOS.visaoGeral;
-  const c = $("#sec-geral .conteudo");
-  c.innerHTML = "";
-  c.appendChild(el("p", "lead", esc(v.resumo)));
-
-  const grid = el("div", "cards");
+  const t = DADOS.tarefasCriativos.itens;
+  const prontas = t.filter((i) => !i.depende_cliente).length;
+  const aguardando = t.filter((i) => i.depende_cliente).length;
+  const pecas = DADOS.calendario.pecas.length;
+  const c = $("#sec-inicio");
+  c.innerHTML =
+    `<div class="hero">
+       <p class="hero-data">Atualizado em ${esc(v && DADOS.meta.atualizadoEm)}</p>
+       <h1 class="hero-saud">${esc(v.saudacao)}<span class="virg">.</span></h1>
+       <p class="hero-sub">${esc(v.resumo)}</p>
+     </div>
+     <div class="stats">
+       <div class="stat -ok"><div class="stat-num">${prontas}</div><div class="stat-lab">Pra começar já</div></div>
+       <div class="stat -espera"><div class="stat-num">${aguardando}</div><div class="stat-lab">Aguardando cliente</div></div>
+       <div class="stat -total"><div class="stat-num">${pecas}</div><div class="stat-lab">Peças no mês</div></div>
+     </div>
+     <button class="atalho" id="ir-tarefas">Ver minhas tarefas →</button>
+     <h3 class="bloco-tit">As duas marcas</h3>
+     <div class="cards" id="inicio-marcas"></div>`;
+  const grid = $("#inicio-marcas");
   v.marcas.forEach((m) => {
     grid.appendChild(el("article", "card",
       `<h3>${esc(m.nome)} <span class="tag">${esc(m.instagram)}</span></h3>
        <p>${esc(m.angulo)}</p>
        <ul class="mini">
          <li><strong>Idiomas:</strong> ${esc(m.idiomas)}</li>
-         <li><strong>Seguidores:</strong> ${esc(m.seguidores)}</li>
+         <li><strong>Tom:</strong> ${esc(m.tom)}</li>
        </ul>`));
   });
-  c.appendChild(grid);
-
-  const a = v.acordo;
-  c.appendChild(el("div", "box",
-    `<h3>Acordo comercial</h3>
-     <ul class="mini">
-       <li><strong>Modelo:</strong> ${esc(a.modelo)}</li>
-       <li><strong>Honorários:</strong> ${esc(a.honorarios)}</li>
-       <li><strong>Verba de mídia:</strong> ${esc(a.verbaMidia)}</li>
-       <li><strong>Reavaliação:</strong> ${esc(a.reavaliacao)}</li>
-       <li><strong>Conversão:</strong> ${esc(a.conversao)}</li>
-     </ul>`));
+  $("#ir-tarefas").addEventListener("click", () => {
+    location.hash = "tarefas";
+    mostrarSecao("tarefas");
+  });
 }
 
 function renderEstrategia() {
@@ -176,14 +178,14 @@ function renderEstrategia() {
   c.innerHTML = "";
   c.appendChild(el("p", "lead", esc(e.posicionamento)));
 
-  c.appendChild(el("h3", null, "Regras fixas"));
+  c.appendChild(el("h3", "bloco-tit", "Regras fixas"));
   const regras = el("div", "cards");
   e.regrasFixas.forEach((r) =>
     regras.appendChild(el("article", "card",
       `<h3>${esc(r.titulo)}</h3><p>${esc(r.detalhe)}</p>`)));
   c.appendChild(regras);
 
-  c.appendChild(el("h3", null, "Pilares de conteúdo"));
+  c.appendChild(el("h3", "bloco-tit", "Pilares de conteúdo"));
   e.pilares.forEach((p) => {
     const linha = el("div", "pilar");
     linha.innerHTML =
@@ -234,7 +236,7 @@ function renderTarefas() {
 
   const bloco = (titulo, itens, classe) => {
     if (!itens.length) return;
-    c.appendChild(el("h3", null, titulo));
+    c.appendChild(el("h3", "bloco-tit", titulo));
     itens.forEach((i) => {
       const card = el("article", "tarefa " + classe);
       card.innerHTML =
