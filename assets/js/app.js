@@ -32,7 +32,8 @@ async function carregarPacote() {
   const timer = setTimeout(() => ctrl.abort(), 8000);
   let r;
   try {
-    r = await fetch("data.enc", { cache: "no-store", signal: ctrl.signal });
+    // cache-busting (?_=…) garante que nunca peguemos um data.enc antigo do cache
+    r = await fetch("data.enc?_=" + Date.now(), { cache: "no-store", signal: ctrl.signal });
   } catch (e) {
     const err = new Error("Não consegui carregar os dados. O preview está no ar? (rode o servidor local e recarregue.)");
     err.tipo = "carregar";
@@ -54,24 +55,38 @@ async function tentarLogin(ev) {
   const erro = $("#login-erro");
   const btn = $("#login-btn");
   const senha = $("#senha").value;
+  const reverter = () => { btn.disabled = false; btn.textContent = "Entrar"; };
   erro.textContent = "";
   btn.disabled = true;
   btn.textContent = "Abrindo…";
+
+  // Etapa 1: carregar + descriptografar (aqui um erro = senha ou carregamento)
+  let dados;
   try {
     const pacote = await carregarPacote();
-    DADOS = await descriptografar(pacote, senha);
-    sessionStorage.setItem("mkt_senha", senha); // some ao fechar a aba
-    entrar();
+    dados = await descriptografar(pacote, senha);
   } catch (e) {
-    // Mensagem específica: problema de carregamento vs. senha incorreta.
     erro.textContent = e && e.tipo === "carregar"
       ? e.message
       : "Senha incorreta. Tente de novo.";
     $("#senha").select();
-  } finally {
-    // Garante que o botão NUNCA fique preso em "Abrindo…".
-    btn.disabled = false;
-    btn.textContent = "Entrar";
+    reverter();
+    return;
+  }
+
+  // Senha correta a partir daqui. Guardar a senha não pode derrubar o login.
+  DADOS = dados;
+  try { sessionStorage.setItem("mkt_senha", senha); } catch (_) { /* modo privado: ok */ }
+
+  // Etapa 2: montar o painel. Um erro aqui NÃO é senha — mostrar o motivo real.
+  try {
+    entrar();
+  } catch (e) {
+    erro.textContent = "Erro ao montar o painel: [" + (e && e.name) + "] " + (e && e.message);
+    // desfaz o estado pela metade para o usuário ver a mensagem na tela de login
+    $("#tela-login").hidden = false;
+    $("#app").hidden = true;
+    reverter();
   }
 }
 
@@ -260,6 +275,17 @@ function renderIdeiasClaude() {
   ic.itens.forEach((i) => ul.appendChild(el("li", null, esc(i))));
   c.appendChild(ul);
 }
+
+/* ---------- Rede de segurança: nenhum erro falha em silêncio ---------- */
+function mostrarErroGlobal(msg) {
+  const erro = document.getElementById("login-erro");
+  const login = document.getElementById("tela-login");
+  if (erro && login && !login.hidden) erro.textContent = "Falha: " + msg;
+}
+window.addEventListener("error", (e) =>
+  mostrarErroGlobal((e.error && e.error.name ? "[" + e.error.name + "] " : "") + (e.message || e.error)));
+window.addEventListener("unhandledrejection", (e) =>
+  mostrarErroGlobal("promessa: " + (e.reason && e.reason.message ? e.reason.message : e.reason)));
 
 /* ---------- Boot ---------- */
 document.addEventListener("DOMContentLoaded", async () => {
