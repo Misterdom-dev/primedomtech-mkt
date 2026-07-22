@@ -1,0 +1,4 @@
+# Fonte da verdade em claro — NUNCA commitar (contém dados de cliente)
+build/content.json
+.DS_Store
+node_modules/

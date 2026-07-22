@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Painel interno: NÃO indexar em buscadores -->
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Painel MKT — Altamar & Tropical Aqua</title>
+  <meta name="description" content="Painel interno de marketing." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <!-- ===== Tela de login ===== -->
+  <section id="tela-login" class="login-wrap">
+    <form id="login-form" class="login-card" autocomplete="off">
+      <div class="login-logo">🌊</div>
+      <h1>Painel MKT</h1>
+      <p class="login-sub">Altamar &amp; Tropical Aqua · acesso restrito</p>
+      <label for="senha" class="sr-only">Senha</label>
+      <input type="password" id="senha" placeholder="Senha de acesso"
+             autocomplete="current-password" required />
+      <button type="submit" id="login-btn">Entrar</button>
+      <p id="login-erro" class="login-erro" role="alert"></p>
+    </form>
+    <p class="login-rodape">Conteúdo criptografado ponta a ponta. Sem a senha, nada é revelado.</p>
+  </section>
+
+  <!-- ===== Aplicação (só aparece após login) ===== -->
+  <div id="app" hidden>
+    <header class="topo">
+      <div class="topo-inner">
+        <div class="marca">
+          <span class="marca-icon">🌊</span>
+          <div>
+            <strong>Painel MKT</strong>
+            <span id="atualizado" class="atualizado"></span>
+          </div>
+        </div>
+        <input type="checkbox" id="menu-mobile" class="menu-toggle" hidden />
+        <label for="menu-mobile" class="menu-btn" aria-label="Abrir menu">☰</label>
+        <nav class="nav" aria-label="Seções do painel">
+          <a href="#geral"       class="nav-link" data-sec="geral">Visão geral</a>
+          <a href="#tarefas"     class="nav-link" data-sec="tarefas">Tarefas</a>
+          <a href="#calendario"  class="nav-link" data-sec="calendario">Calendário</a>
+          <a href="#estrategia"  class="nav-link" data-sec="estrategia">Estratégia</a>
+          <a href="#banco"       class="nav-link" data-sec="banco">Banco de ideias</a>
+          <a href="#ideias"      class="nav-link" data-sec="ideias">Ideias novas</a>
+          <button id="sair" class="sair" type="button">Sair</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="sec-geral"      class="secao"><h2>Visão geral</h2><div class="conteudo"></div></section>
+      <section id="sec-tarefas"    class="secao" hidden><h2>Tarefas dos criativos</h2><div class="conteudo"></div></section>
+      <section id="sec-calendario" class="secao" hidden><h2>Calendário do mês</h2><div class="conteudo"></div></section>
+      <section id="sec-estrategia" class="secao" hidden><h2>Estratégia</h2><div class="conteudo"></div></section>
+      <section id="sec-banco"      class="secao" hidden><h2>Banco de ideias</h2><div class="conteudo"></div></section>
+      <section id="sec-ideias"     class="secao" hidden><h2>Ideias novas (Claude)</h2><div class="conteudo"></div></section>
+    </main>
+
+    <footer class="rodape">
+      <p>Painel interno · MKT_Digital · uso restrito Dom &amp; equipe de criativos</p>
+    </footer>
+  </div>
+
+  <script src="assets/js/crypto.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
